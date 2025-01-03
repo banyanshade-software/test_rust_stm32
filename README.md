@@ -13,4 +13,12 @@ Several experimentations are performed here, on several branches
 
   in this setup we generate a panic, and check our handler is called (through hw breakpoint)
   
+* **03_measure_footprint**
 
+  we build with and without rust to compare footprint (with FreeRTOS, CMSY 1)
+  With Rust and librs.a :
+  	RAM     1.69 KB
+  	FLASH   13.55 KB
+  	
+  	we have a few core function (core::str:::count 1.2kB, core==option::, core::fmt 518B)
+  	
