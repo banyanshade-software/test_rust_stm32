@@ -9,6 +9,8 @@ Several experimentations are performed here, on several branches
   Rust is only a static library, with (for now) no specific stm32 crates, called from C
 
 
-  * 02_test_panic
+* **02_test_panic**
+
+  in this setup we generate a panic, and check our handler is called (through hw breakpoint)
   
 
