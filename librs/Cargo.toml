@@ -9,13 +9,10 @@ panic ="abort"
 [profile.release]
 panic ="abort"
 
-[profile.test]
-panic ="abort"
+#[profile.test]
+#panic ="abort"
 
 [lib]
 crate-type=["staticlib"]
 
 [dependencies]
-cortex-m = { path="/Users/danielbraun/devel/ruststm/cortex-m/cortex-m", features=["onechar_itm"] }
-#cortex-m = { path="/Users/danielbraun/devel/ruststm/cortex-m/cortex-m" }
-panic-itm= { path="/Users/danielbraun/devel/ruststm/cortex-m/panic-itm", features=["onechar_itm"] }
