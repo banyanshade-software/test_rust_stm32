@@ -22,11 +22,15 @@ Several experimentations are performed here, on several branches
   	
   	we have a few core function (core::str:::count 1.2kB, core==option::, core::fmt 518B)
   	
-* **04_ITM**
+* 04_ITM
 
   we add itm support, through cortex-m crate. The ITM part has a problem (sending 4 chars per 
   u32 cell, while SWV viewer expect a single char), see https://github.com/rust-embedded/cortex-m/issues/571
   This is fixed by forking and adding "onechar_itm" feature.
   
   Footprint significntly increased, with FLASH : 26,77 KB (+9KB) with format method, (but also encode_utf8)
+
+* **05_GPIO**
+
+  we now call main_rs() from FreeRTOS default task, and from rust we call osDelay()
 

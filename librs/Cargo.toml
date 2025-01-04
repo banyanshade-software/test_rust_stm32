@@ -17,5 +17,12 @@ crate-type=["staticlib"]
 
 [dependencies]
 cortex-m = { path="/Users/danielbraun/devel/ruststm/cortex-m/cortex-m", features=["onechar_itm"] }
-#cortex-m = { path="/Users/danielbraun/devel/ruststm/cortex-m/cortex-m" }
-panic-itm= { path="/Users/danielbraun/devel/ruststm/cortex-m/panic-itm", features=["onechar_itm"] }
+panic-itm = { path="/Users/danielbraun/devel/ruststm/cortex-m/panic-itm", features=["onechar_itm"] }
+
+#[dependencies.stm32g4]
+#version = "0.15.1"
+#features = ["stm32g431"]
+[dependencies.stm32g4]
+path = "/Users/danielbraun/devel/ruststm/stm32-rs/stm32g4"
+#version = "0.17.0"
+features = ["stm32g431"]

@@ -5,62 +5,28 @@
 #![no_std]
 
 extern crate panic_itm;
-use cortex_m::{iprintln,itm, peripheral};
+use cortex_m::{iprintln, peripheral};
+use core::ffi::c_int;
+
+//extern "C" { pub fn HAL_Delay(mil :u32); }
+extern "C" { pub fn osDelay(mil :u32) -> c_int; }
 
 #[no_mangle]
 fn rs_main() -> !{
-	let x:[u8;5] = [34,34,34,34,13];
-	itm::write_all(itm(), &x);
-	itm::write_all(itm(), "X".as_bytes());
-	itm::write_all(itm(), "X".as_bytes());
-	itm::write_all(itm(), "X".as_bytes());
-	itm::write_all(itm(), "X".as_bytes());
-	itm::write_all(itm(), "X".as_bytes());
-	itm::write_all(itm(), "X".as_bytes());
-	itm::write_all(itm(), "\n".as_bytes());
 	
-	itm::write_all(itm(), "A".as_bytes());
-	itm::write_all(itm(), "A".as_bytes());
-	itm::write_all(itm(), "A".as_bytes());
-	itm::write_all(itm(), "A".as_bytes());
-	itm::write_all(itm(), "A".as_bytes());
-	itm::write_all(itm(), "\n".as_bytes());
 	
-	itm::write_all(itm(), "BC".as_bytes());
-	itm::write_all(itm(), "BC".as_bytes());
-	itm::write_all(itm(), "BC".as_bytes());
-	itm::write_all(itm(), "\n".as_bytes());
-		
-	itm::write_all(itm(), "DEF".as_bytes());
-	itm::write_all(itm(), "DEF".as_bytes());
-	itm::write_all(itm(), "DEF".as_bytes());
-	itm::write_all(itm(), "\n".as_bytes());
-		
-	itm::write_all(itm(), "GHIJ".as_bytes());
-	itm::write_all(itm(), "GHIJ".as_bytes());
-	itm::write_all(itm(), "GHIJ".as_bytes());
-	itm::write_all(itm(), "\n".as_bytes());
-	
-	itm::write_all(itm(), "KLMNO".as_bytes());
-	itm::write_all(itm(), "KLMNO".as_bytes());
-	itm::write_all(itm(), "KLMNO".as_bytes());
-	itm::write_all(itm(), "\n".as_bytes());
-	
-
-	itm::write_str(itm(), "opopopop\n");
-	itm::write_str(itm(), "opopopop\n");
-	itm::write_str(itm(), "opopopop\n");
-	
-	iprintln!(itm(), "[TEST] Val: {:?}", 42);
-	iprintln!(itm(), "[TEST] Val: {:?}", 42);
-	let _ = test_panic().expect("paf");
-    loop {}
+    loop {
+		iprintln!(itm(), "hop");
+	    unsafe {
+		    osDelay(1000);
+	    }
+	}
 }
 
+/*
 fn test_panic() -> Option<()> {
 	None
-}
-
+}*/
 
 
 fn itm() -> &'static mut peripheral::itm::Stim {
