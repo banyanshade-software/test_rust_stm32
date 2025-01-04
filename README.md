@@ -9,13 +9,13 @@ Several experimentations are performed here, on several branches
   Rust is only a static library, with (for now) no specific stm32 crates, called from C
 
 
-* **02_test_panic**
+* 02_test_panic
 
   in this setup we generate a panic, and check our handler is called (through hw breakpoint)
   
 * **03_measure_footprint**
 
-  we build with and without rust to compare footprint (with FreeRTOS, CMSY 1)
+  we build with and without rust to compare footprint (with FreeRTOS, CMSIS 1)
   With Rust and librs.a :        Without Rust
   	RAM     1.69 KB              RAM : 3.23 KB
   	FLASH   13.55 KB             FLASH : 17,2 KB
