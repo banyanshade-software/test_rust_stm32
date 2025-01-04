@@ -33,4 +33,7 @@ Several experimentations are performed here, on several branches
 * **05_GPIO**
 
   we now call main_rs() from FreeRTOS default task, and from rust we call osDelay()
+  we use use stm32g4_staging::stm32g491 for a low level (too low ?) access to GPIO
+
+ FLASH  usage increased to 27.62 K (mostly du to ITM, see above)
 
