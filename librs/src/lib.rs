@@ -14,7 +14,12 @@ use core::ffi::c_int;
 use stm32g4_staging::stm32g491;
 
 //extern "C" { pub fn HAL_Delay(mil :u32); }
-extern "C" { pub fn osDelay(mil :u32) -> c_int; }
+extern "C" { 
+	pub fn osDelay(mil :u32) -> c_int;
+	pub fn notifWait() -> u32;
+
+	 }
+
 
 #[no_mangle]
 fn rs_main() -> !{
@@ -24,11 +29,17 @@ fn rs_main() -> !{
     let gpioa = &peripherals.GPIOA;
 	
     loop {
-		iprintln!(itm(), "hop");
-		gpioa.bsrr().write(|w| w.bs5().set_bit());
-	    unsafe {  osDelay(1000);  }
-	    gpioa.brr().write(|w| w.br5().set_bit());
-	    unsafe {  osDelay(200);  }
+		let n = unsafe { notifWait() };
+		if n & 0x0000_0001 != 0 {
+			gpioa.bsrr().write(|w| w.bs5().set_bit());
+
+		}
+		if n & 0x0000_0002 != 0  {
+			gpioa.brr().write(|w| w.br5().set_bit());
+		}
+		iprintln!(itm(), "aa");
+	    //unsafe {  osDelay(1000);  }
+	    //unsafe {  osDelay(200);  }
 	}
 }
 

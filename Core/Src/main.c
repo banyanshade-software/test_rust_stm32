@@ -44,7 +44,7 @@
 UART_HandleTypeDef hlpuart1;
 
 osThreadId defaultTaskHandle;
-uint32_t defaultTaskBuffer[ 128 ];
+uint32_t defaultTaskBuffer[ 256 ];
 osStaticThreadDef_t defaultTaskControlBlock;
 /* USER CODE BEGIN PV */
 
@@ -70,6 +70,12 @@ void itm_write(const char *ptr, int len)
 	}
 }
 
+uint32_t notifWait(void)
+{
+	uint32_t notif = 0;
+	xTaskNotifyWait(0, 0xFFFFFFFF, &notif, portMAX_DELAY);
+	return notif;
+}
 
 /* USER CODE END 0 */
 
@@ -129,7 +135,7 @@ int main(void)
 
   /* Create the thread(s) */
   /* definition and creation of defaultTask */
-  osThreadStaticDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128, defaultTaskBuffer, &defaultTaskControlBlock);
+  osThreadStaticDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 256, defaultTaskBuffer, &defaultTaskControlBlock);
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
@@ -323,7 +329,27 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     HAL_IncTick();
   }
   /* USER CODE BEGIN Callback 1 */
+  if (htim->Instance == TIM7) {
+      static uint32_t cnt = 0;
+      cnt ++;
 
+	  BaseType_t higher=0;
+	  //xTaskNotifyFromISR(ina3221_taskHandle, NOTIF_INA_READ, eSetBits, &higher);
+
+      switch (cnt%1000) {
+      case 0:
+    	  xTaskNotifyFromISR(defaultTaskHandle, 0x00000001 , eSetBits, &higher);
+    	  break;
+      case 700:
+    	  xTaskNotifyFromISR(defaultTaskHandle, 0x00000002 , eSetBits, &higher);
+    	  break;
+      default:
+    	  // do nothing
+    	  break;
+      }
+	  portYIELD_FROM_ISR(higher);
+
+    }
   /* USER CODE END Callback 1 */
 }
 
