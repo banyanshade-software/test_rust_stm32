@@ -28,4 +28,5 @@ Several experimentations are performed here, on several branches
   u32 cell, while SWV viewer expect a single char), see https://github.com/rust-embedded/cortex-m/issues/571
   This is fixed by forking and adding "onechar_itm" feature.
   
-  Footprint significntly increased, with FLASH : 26,77 KB (+9KB) with format method, but also encode_utf8
+  Footprint significntly increased, with FLASH : 26,77 KB (+9KB) with format method, (but also encode_utf8)
+
