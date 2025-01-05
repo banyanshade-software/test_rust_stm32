@@ -28,12 +28,23 @@ fn rs_main() -> !{
 	let peripherals = unsafe { stm32g491::Peripherals::steal() };
     let gpioa = &peripherals.GPIOA;
 	
-	let str = "written in rust";
+	let str = "sos sos sos sos written in rust sos sos sos sos ";
 	let mut mi = morse_iterator(str);
     loop {
 		let n = unsafe { notifWait() };
-		let _k = mi.next();
+		
+		if n & 0x0000_0001 == 0 { continue; }
+				
+		let k = mi.next();
+
+		match k {
+			None => continue,
+			Some(' ') => gpioa.bsrr().write(|w| w.bs5().set_bit()),
+			_         => gpioa.brr().write(|w| w.br5().set_bit()),
+		};
+    
 		iprintln!(itm(), "k ");
+		/*
 		if n & 0x0000_0001 != 0 {
 			gpioa.bsrr().write(|w| w.bs5().set_bit());
 
@@ -44,6 +55,7 @@ fn rs_main() -> !{
 		iprintln!(itm(), "aa");
 	    //unsafe {  osDelay(1000);  }
 	    //unsafe {  osDelay(200);  }
+	    */
 	}
 }
 
@@ -51,6 +63,7 @@ fn morse(ch:char) -> &'static str
 {
 	iprintln!(itm(), "morsing {}", ch);
 	let c = ch.to_ascii_lowercase();
+	if c == ' ' { return "  "; }
 	if c<'a' || c > 'z' {
 		return "";
 	}
@@ -86,13 +99,24 @@ fn morse(ch:char) -> &'static str
 	conv[i]
 }
 
-
+fn to_state(m :char) -> &'static str {
+	let r = match m {
+		' ' => "   ",
+		'-' => "xxx ",
+		'.' => "x ",
+		_ => ""
+	};
+	r
+}
 
 fn morse_iterator(str: &str) -> impl Iterator<Item = char> + use<'_>
 {
 	str.chars()
 	   .map(|k| morse(k).chars())
 	   .flatten()
+	   .map(|m| to_state(m).chars())
+	   .flatten()
+	   
 }
 
 /*

@@ -335,7 +335,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
 	  BaseType_t higher=0;
 	  //xTaskNotifyFromISR(ina3221_taskHandle, NOTIF_INA_READ, eSetBits, &higher);
-
+	  /*
       switch (cnt%1000) {
       case 0:
     	  xTaskNotifyFromISR(defaultTaskHandle, 0x00000001 , eSetBits, &higher);
@@ -346,7 +346,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
       default:
     	  // do nothing
     	  break;
-      }
+      }*/
+	  if (0==(cnt%100)) xTaskNotifyFromISR(defaultTaskHandle, 0x00000001 , eSetBits, &higher);
 	  portYIELD_FROM_ISR(higher);
 
     }
