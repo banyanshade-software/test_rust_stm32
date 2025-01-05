@@ -28,8 +28,12 @@ fn rs_main() -> !{
 	let peripherals = unsafe { stm32g491::Peripherals::steal() };
     let gpioa = &peripherals.GPIOA;
 	
+	let str = "written in rust";
+	let mut mi = morse_iterator(str);
     loop {
 		let n = unsafe { notifWait() };
+		let _k = mi.next();
+		iprintln!(itm(), "k ");
 		if n & 0x0000_0001 != 0 {
 			gpioa.bsrr().write(|w| w.bs5().set_bit());
 
@@ -41,6 +45,54 @@ fn rs_main() -> !{
 	    //unsafe {  osDelay(1000);  }
 	    //unsafe {  osDelay(200);  }
 	}
+}
+
+fn morse(ch:char) -> &'static str
+{
+	iprintln!(itm(), "morsing {}", ch);
+	let c = ch.to_ascii_lowercase();
+	if c<'a' || c > 'z' {
+		return "";
+	}
+	let conv :[&'static str;26] = [
+		 /* a */ ".- ",
+    /* b */ "-... ",
+    /* c */ "-.-. ",
+    /* d */ "-.. ",
+    /* e */ ". ",
+    /* f */ "..-. ",
+    /* g */ "--. ",
+    /* h */ ".... ",
+    /* i */ ".. ",
+    /* j */ ".--- ",
+    /* k */ "-.- ",
+    /* l */ ".-.. ",
+    /* m */ "-- ",
+    /* n */ "-. ",
+    /* o */ "--- ",
+    /* p */ ".--. ",
+    /* q */ "--.- ",
+    /* r */ ".-. ",
+    /* s */ "... ",
+    /* t */ "- ",
+    /* u */ "..- ",
+    /* v */ "...- ",
+    /* w */ ".-- ",
+    /* x */ "-..- ",
+    /* y */ "-.-- ",
+    /* z */ "--.. "
+	];
+	let i  = c as usize - 'a' as usize;
+	conv[i]
+}
+
+
+
+fn morse_iterator(str: &str) -> impl Iterator<Item = char> + use<'_>
+{
+	str.chars()
+	   .map(|k| morse(k).chars())
+	   .flatten()
 }
 
 /*
