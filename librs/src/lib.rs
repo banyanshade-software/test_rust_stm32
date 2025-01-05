@@ -28,7 +28,7 @@ fn rs_main() -> !{
 	let peripherals = unsafe { stm32g491::Peripherals::steal() };
     let gpioa = &peripherals.GPIOA;
 	
-	let str = "sos    sos    sos    sos    written in rust \
+	let str = "sos  sos  sos  sos  written in rust \
 Longtemps je me suis couche de bonne heure  \
 Parfois a peine ma bougie eteinte  mes yeux se fermaient si vite \
 que je n avais pas le temps de me dire  \
@@ -116,10 +116,10 @@ fn to_state(m :char) -> &'static str {
 fn morse_iterator(str: &str) -> impl Iterator<Item = char> + use<'_>
 {
 	str.chars()
-	   .map(|k| morse(k).chars())
-	   .flatten()
-	   .map(|m| to_state(m).chars())
-	   .flatten()
+	   .flat_map(|k| morse(k).chars())
+	   //.flatten()
+	   .flat_map(|m| to_state(m).chars())
+	   //.flatten()
 	   
 }
 
