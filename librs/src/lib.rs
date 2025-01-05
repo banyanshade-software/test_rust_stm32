@@ -6,10 +6,10 @@
 // see also https://jonathanklimt.de/electronics/programming/embedded-rust/rust-STM32F103-blink/
 #![no_std]
 
-extern crate panic_itm;
+//extern crate panic_itm;
 extern crate critical_section;
 
-use cortex_m::{iprintln, peripheral};
+//use cortex_m::{peripheral};
 use core::ffi::c_int;
 use stm32g4_staging::stm32g491;
 
@@ -28,22 +28,26 @@ fn rs_main() -> !{
 	let peripherals = unsafe { stm32g491::Peripherals::steal() };
     let gpioa = &peripherals.GPIOA;
 	
-	let str = "sos sos sos sos written in rust sos sos sos sos ";
+	let str = "sos    sos    sos    sos    written in rust \
+Longtemps je me suis couche de bonne heure  \
+Parfois a peine ma bougie eteinte  mes yeux se fermaient si vite \
+que je n avais pas le temps de me dire  \
+je m endors  Et une demi heure apres  la pensee qu il etait temps de chercher \
+le someil m eveillait ";
+	
 	let mut mi = morse_iterator(str);
     loop {
 		let n = unsafe { notifWait() };
-		
 		if n & 0x0000_0001 == 0 { continue; }
 				
 		let k = mi.next();
-
 		match k {
 			None => continue,
-			Some(' ') => gpioa.bsrr().write(|w| w.bs5().set_bit()),
-			_         => gpioa.brr().write(|w| w.br5().set_bit()),
+			Some(' ') => gpioa.brr().write(|w|   w.br5().set_bit()),
+			_         => gpioa.bsrr().write(|w| w.bs5().set_bit()),
 		};
     
-		iprintln!(itm(), "k ");
+		//iprintln!(itm(), "k ");
 		/*
 		if n & 0x0000_0001 != 0 {
 			gpioa.bsrr().write(|w| w.bs5().set_bit());
@@ -61,9 +65,9 @@ fn rs_main() -> !{
 
 fn morse(ch:char) -> &'static str
 {
-	iprintln!(itm(), "morsing {}", ch);
+	//iprintln!(itm(), "morsing {}", ch);
 	let c = ch.to_ascii_lowercase();
-	if c == ' ' { return "  "; }
+	if c == ' ' { return "   "; }
 	if c<'a' || c > 'z' {
 		return "";
 	}
@@ -124,13 +128,14 @@ fn test_panic() -> Option<()> {
 	None
 }*/
 
-
+/*
 fn itm() -> &'static mut peripheral::itm::Stim {
     unsafe { &mut (*peripheral::ITM::PTR).stim[0] }
 }
-/*
+*/
+
 #[panic_handler]
 fn panic(_info: &core::panic::PanicInfo) -> ! {
     loop {}
 }
-*/
+
