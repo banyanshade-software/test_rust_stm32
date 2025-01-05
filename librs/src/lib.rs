@@ -35,31 +35,32 @@ que je n avais pas le temps de me dire  \
 je m endors  Et une demi heure apres  la pensee qu il etait temps de chercher \
 le someil m eveillait ";
 	
-	let mut mi = morse_iterator(str);
-    loop {
-		let n = unsafe { notifWait() };
-		if n & 0x0000_0001 == 0 { continue; }
+	loop {
+  		let mut mi = morse_iterator(str);
+    	loop {
+			let n = unsafe { notifWait() };
+			if n & 0x0000_0001 == 0 { continue; }
 				
-		let k = mi.next();
-		match k {
-			None => continue,
-			Some(' ') => gpioa.brr().write(|w|   w.br5().set_bit()),
-			_         => gpioa.bsrr().write(|w| w.bs5().set_bit()),
-		};
+			let k = mi.next();
+			match k {
+				None => break,
+				Some(' ') => gpioa.brr().write(|w|   w.br5().set_bit()),
+				_         => gpioa.bsrr().write(|w| w.bs5().set_bit()),
+			};
     
-		//iprintln!(itm(), "k ");
-		/*
-		if n & 0x0000_0001 != 0 {
-			gpioa.bsrr().write(|w| w.bs5().set_bit());
-
-		}
-		if n & 0x0000_0002 != 0  {
-			gpioa.brr().write(|w| w.br5().set_bit());
-		}
-		iprintln!(itm(), "aa");
-	    //unsafe {  osDelay(1000);  }
-	    //unsafe {  osDelay(200);  }
-	    */
+			//iprintln!(itm(), "k ");
+			/*
+			if n & 0x0000_0001 != 0 {
+				gpioa.bsrr().write(|w| w.bs5().set_bit());
+			}
+			if n & 0x0000_0002 != 0  {
+				gpioa.brr().write(|w| w.br5().set_bit());
+			}
+			iprintln!(itm(), "aa");
+	    	//unsafe {  osDelay(1000);  }
+	    	//unsafe {  osDelay(200);  }
+	    	*/
+	    }
 	}
 }
 
@@ -117,10 +118,7 @@ fn morse_iterator(str: &str) -> impl Iterator<Item = char> + use<'_>
 {
 	str.chars()
 	   .flat_map(|k| morse(k).chars())
-	   //.flatten()
-	   .flat_map(|m| to_state(m).chars())
-	   //.flatten()
-	   
+	   .flat_map(|m| to_state(m).chars())	   
 }
 
 /*
