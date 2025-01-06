@@ -72,7 +72,10 @@ fn morse(ch:char) -> &'static str
 	if c<'a' || c > 'z' {
 		return "";
 	}
-	const CONV :[&'static str;26] = [
+	// do NOT declare conv with a let, otherwise
+	// it will allocate the array on the stack (364 bytes instead of 156)
+	// strangely static also seems to allocate space on stack, which is strange
+	const  CONV :[&'static str;26] = [
 	/* a */ ".- ",
     /* b */ "-... ",
     /* c */ "-.-. ",
