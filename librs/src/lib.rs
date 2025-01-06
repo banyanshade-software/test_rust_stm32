@@ -17,8 +17,7 @@ use stm32g4_staging::stm32g491;
 extern "C" { 
 	pub fn osDelay(mil :u32) -> c_int;
 	pub fn notifWait() -> u32;
-
-	 }
+}
 
 
 #[no_mangle]
@@ -29,7 +28,7 @@ fn rs_main() -> !{
 	let peripherals = unsafe { stm32g491::Peripherals::steal() };
     let gpioa = &peripherals.GPIOA;
 	
-	let str = "sos  sos  sos  sos  written in rust \
+	let sometext = "\
 Longtemps je me suis couche de bonne heure  \
 Parfois a peine ma bougie eteinte  mes yeux se fermaient si vite \
 que je n avais pas le temps de me dire  \
@@ -40,17 +39,21 @@ reflexions sur ce que je venais de lire mais ces reflexions avaient pris un tour
 un peu particulier  il me semblait que j etais moi meme ce dont parlait l ouvrage";
 	
 	loop {
-  		let mut mi = morse_iterator(str);
+  		let mut mi = sometext.chars().flat_map(|k| morse(k).chars())
+                                     .flat_map(|m| to_onoff(m).chars()); 
   		
     	loop {
+            // notifWait() is simply a wrapper around xTaskNotifyWait()
+            // Timer IRQ will send a notification every 100ms
 			let n = unsafe { notifWait() };
 			if n & 0x0000_0001 == 0 { continue; }
 				
 			let k = mi.next();
 			match k {
 				None => break,
-				
-				Some(' ') => gpioa.brr().write(|w|   w.br5().set_bit()),
+				// we have only ' ' or 'x' as defined in to_onoff()
+                // GPIO PA5 is connected to LED on G491 Nucleo board
+				Some(' ') => gpioa.brr().write( |w| w.br5().set_bit()),
 				_         => gpioa.bsrr().write(|w| w.bs5().set_bit()),
 				//_ => (),
 			};
@@ -63,7 +66,7 @@ fn morse(ch:char) -> &'static str
 {
 	//iprintln!(itm(), "morsing {}", ch);
 	let c = ch.to_ascii_lowercase();
-	if c == ' ' { return "   "; }
+	if c == ' ' { return "  "; }
 	if c<'a' || c > 'z' {
 		return "";
 	}
@@ -110,14 +113,6 @@ fn to_onoff(m :char) -> &'static str {
 }
 
 
-
-fn morse_iterator(str: &str) -> impl Iterator<Item = char> + use<'_>
-{
-	str.chars()
-	   .flat_map(|k| morse(k).chars())
-	   .flat_map(|m| to_onoff(m).chars())	
-	
-}
 
 // stack 844 B
 // 364B with opt
