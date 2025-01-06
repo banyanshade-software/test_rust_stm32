@@ -22,12 +22,6 @@ extern "C" {
 
 #[no_mangle]
 fn rs_main() -> !{
-
-	// green led : PA5
-	//let peripherals = stm32g491::Peripherals::take().unwrap();
-	let peripherals = unsafe { stm32g491::Peripherals::steal() };
-    let gpioa = &peripherals.GPIOA;
-	
 	let sometext = "\
 Longtemps je me suis couche de bonne heure  \
 Parfois a peine ma bougie eteinte  mes yeux se fermaient si vite \
@@ -38,24 +32,32 @@ dans les mains et souffler ma lumière  je n avais ps cesse en dormant de faire 
 reflexions sur ce que je venais de lire mais ces reflexions avaient pris un tour \
 un peu particulier  il me semblait que j etais moi meme ce dont parlait l ouvrage";
 	
+
+	// let peripherals = stm32g491::Peripherals::take().unwrap(); << dependecies problem
+	let peripherals = unsafe { stm32g491::Peripherals::steal() };
+    let gpioa = &peripherals.GPIOA;  // Nucleo green LED is on PA5
+	
 	loop {
-  		let mut mi = sometext.chars().flat_map(|k| morse(k).chars())
-                                     .flat_map(|m| to_onoff(m).chars()); 
-  		
+        // all the string to morse conversion is on the 3 following lines,
+        // which obviously can easyly be tested on host, separately from the MCU stuffs
+
+  		let mut mi = sometext.chars()                           // eg: "abc" 
+  		                     .flat_map(|k| morse(k).chars())    // eg: ".- -... -.-. ",
+                             .flat_map(|m| to_onoff(m).chars());// eg  "x xxx   xxx x x x   xxx x xxx x
+
     	loop {
-            // notifWait() is simply a wrapper around xTaskNotifyWait()
-            // Timer IRQ will send a notification every 100ms
-			let n = unsafe { notifWait() };
-			if n & 0x0000_0001 == 0 { continue; }
-				
-			let k = mi.next();
+			let _ = unsafe { notifWait() }; // notifWait() is simply a wrapper around xTaskNotifyWait()
+			// TIM7 IRQ (configured as timebase src timer) sends notification every 100ms
+			
+			let k = mi.next(); // iterators are lazy so actual call to morse() and to_onoff()
+                               // occurs here "on demand"
+                               // around 200 bytes stack are used on iterator next() call 
+                               // (several call levels) which can be significant in RTOS tasks
 			match k {
 				None => break,
-				// we have only ' ' or 'x' as defined in to_onoff()
                 // GPIO PA5 is connected to LED on G491 Nucleo board
-				Some(' ') => gpioa.brr().write( |w| w.br5().set_bit()),
+				Some(' ') => gpioa.brr() .write(|w| w.br5().set_bit()),
 				_         => gpioa.bsrr().write(|w| w.bs5().set_bit()),
-				//_ => (),
 			};
 	    }
 	}
@@ -71,7 +73,7 @@ fn morse(ch:char) -> &'static str
 		return "";
 	}
 	let conv :[&'static str;26] = [
-		 /* a */ ".- ",
+	/* a */ ".- ",
     /* b */ "-... ",
     /* c */ "-.-. ",
     /* d */ "-.. ",
