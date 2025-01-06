@@ -72,7 +72,7 @@ fn morse(ch:char) -> &'static str
 	if c<'a' || c > 'z' {
 		return "";
 	}
-	let conv :[&'static str;26] = [
+	const CONV :[&'static str;26] = [
 	/* a */ ".- ",
     /* b */ "-... ",
     /* c */ "-.-. ",
@@ -101,7 +101,7 @@ fn morse(ch:char) -> &'static str
     /* z */ "--.. "
 	];
 	let i  = c as usize - 'a' as usize;
-	conv[i]
+	CONV[i]
 }
 
 fn to_onoff(m :char) -> &'static str {
