@@ -19,10 +19,7 @@ extern "C" {
 	pub fn notifWait() -> u32;
 }
 
-
-#[no_mangle]
-fn rs_main() -> !{
-	let sometext = "\
+const SOMETEXT :&str = "\
 Longtemps je me suis couche de bonne heure  \
 Parfois a peine ma bougie eteinte  mes yeux se fermaient si vite \
 que je n avais pas le temps de me dire  \
@@ -31,6 +28,9 @@ le someil m eveillait Je voulais poser le volume que je croyais avoir encore \
 dans les mains et souffler ma lumière  je n avais ps cesse en dormant de faire des \
 reflexions sur ce que je venais de lire mais ces reflexions avaient pris un tour \
 un peu particulier  il me semblait que j etais moi meme ce dont parlait l ouvrage";
+	
+#[no_mangle]
+fn rs_main() -> !{
 	
 
 	// let peripherals = stm32g491::Peripherals::take().unwrap(); << dependecies problem
@@ -41,10 +41,7 @@ un peu particulier  il me semblait que j etais moi meme ce dont parlait l ouvrag
         // all the string to morse conversion is on the 3 following lines,
         // which obviously can easyly be tested on host, separately from the MCU stuffs
 
-  		let mut mi = sometext.chars()                           // eg: "abc" 
-  		                     .flat_map(|k| morse(k).chars())    // eg: ".- -... -.-. ",
-                             .flat_map(|m| to_onoff(m).chars());// eg  "x xxx   xxx x x x   xxx x xxx x
-
+  		let mut mi = morse_iterator(SOMETEXT);
     	loop {
 			let _ = unsafe { notifWait() }; // notifWait() is simply a wrapper around xTaskNotifyWait()
 			// TIM7 IRQ (configured as timebase src timer) sends notification every 100ms
@@ -63,6 +60,12 @@ un peu particulier  il me semblait que j etais moi meme ce dont parlait l ouvrag
 	}
 }
 
+fn morse_iterator(txt:&str) -> impl Iterator<Item=char> + use<'_> {
+  		let mi = txt.chars()                           // eg: "abc" 
+  		                     .flat_map(|k| morse(k).chars())    // eg: ".- -... -.-. ",
+                             .flat_map(|m| to_onoff(m).chars());// eg  "x xxx   xxx x x x   xxx x xxx x
+        mi
+}
 
 fn morse(ch:char) -> &'static str
 {
