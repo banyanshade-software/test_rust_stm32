@@ -4,16 +4,24 @@
 // see also https://github.com/rust-lang/miri/issues/3498
 
 // see also https://jonathanklimt.de/electronics/programming/embedded-rust/rust-STM32F103-blink/
-#![no_std]
+
+//#![no_std]
+#![cfg_attr(not(test), no_std)]
+#[cfg(test)]
+extern crate std;
+
 
 //extern crate panic_itm;
+#[cfg(not(test))]
 extern crate critical_section;
 
 //use cortex_m::{peripheral};
 use core::ffi::c_int;
+#[cfg(not(test))]
 use stm32g4_staging::stm32g491;
 
 //extern "C" { pub fn HAL_Delay(mil :u32); }
+
 extern "C" { 
 	pub fn osDelay(mil :u32) -> c_int;
 	pub fn notifWait() -> u32;
@@ -29,6 +37,7 @@ dans les mains et souffler ma lumière  je n avais ps cesse en dormant de faire 
 reflexions sur ce que je venais de lire mais ces reflexions avaient pris un tour \
 un peu particulier  il me semblait que j etais moi meme ce dont parlait l ouvrage";
 	
+#[cfg(not(test))]
 #[no_mangle]
 fn rs_main() -> !{
 	
@@ -110,6 +119,9 @@ fn morse(ch:char) -> &'static str
 	CONV[i]
 }
 
+
+
+
 fn to_onoff(m :char) -> &'static str {
 	let r = match m {
 		' ' => "   ",
@@ -121,11 +133,38 @@ fn to_onoff(m :char) -> &'static str {
 }
 
 
+#[cfg(test)]
+mod tests {
+    // Note this useful idiom: importing names from outer (for mod tests) scope.
+    use super::*;
+    
+    #[test]
+    fn test_onoff() {
+        assert_eq!(to_onoff(' '), "   ");
+        assert_eq!(to_onoff('-'), "xxx ");
+        assert_eq!(to_onoff('.'), "x ");
+        assert_eq!(to_onoff('?'), "");
+    }
+    
+     #[test]
+    fn test_morse() {
+        assert_eq!(morse('z'), "--.. ");
+        assert_eq!(morse('a'), ".- ");
+    }
+    
+    #[test]
+    fn test_iter() {
+		let m  = morse_iterator("sos");
+		let s:String = m.collect();
+		assert_eq!(s, "x x x    xxx xxx xxx    x x x    ");
+	}
+}
+
 
 // stack 844 B
 // 364B with opt
 
-
+#[cfg(not(test))]
 #[panic_handler]
 fn panic(_info: &core::panic::PanicInfo) -> ! {
     loop {}
