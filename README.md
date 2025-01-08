@@ -37,5 +37,23 @@ Several experimentations are performed here, on several branches
 
  FLASH  usage increased to 27.62 K (mostly du to ITM, see above)
 
-* **06_FreeRtosNotif**
+* 06_FreeRtosNotif
+  We start RTOS integration by using a very simple wrapper around xTaskNotifyWait()
+  and a "tick" notification sent to our task
 
+* 07_more_iterators
+  We're starting todo real things here, and we want to take advantage of
+  lazy iterators: we define simple text to morse code transformation
+  using iterator map(). 
+  Because map() is evaluated leazily, the actual transformation occurs only
+  when needed, and the input text could be arbitrary long. It could even
+  be characters input from a keyboard actually.
+
+* 08_unittest
+  we setup unit tests running on host (here on mac) through an
+  alias 'test_mac' defined in .cargo/config.toml
+
+* **09_rustdoc**
+  we add rust_doc, and we configure (see .cargo/config.toml and src/docs-header.html) 
+  it to be able to include LaTeX comments, because it's fun and it can be
+  *very* convenient when some maths are part of the process !
