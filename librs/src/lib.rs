@@ -1,14 +1,24 @@
 
-
 // http://blackforrest-embedded.de/2024/05/01/rust-and-vendor-sdksii/
 // see also https://github.com/rust-lang/miri/issues/3498
 
 // see also https://jonathanklimt.de/electronics/programming/embedded-rust/rust-STM32F103-blink/
 
+
+
+
 //#![no_std]
 #![cfg_attr(not(test), no_std)]
 #[cfg(test)]
 extern crate std;
+
+
+/// $$E = mc^2 $$
+/// $$m = \frac{m_0}{\sqrt{1-\frac{v^2}{c^2}}}$$
+pub fn xmorse(ch:char) -> &'static str
+{
+	"toto"
+}
 
 
 //extern crate panic_itm;
@@ -27,6 +37,7 @@ extern "C" {
 	pub fn notifWait() -> u32;
 }
 
+/// sample text 
 const SOMETEXT :&str = "\
 Longtemps je me suis couche de bonne heure  \
 Parfois a peine ma bougie eteinte  mes yeux se fermaient si vite \
@@ -37,6 +48,9 @@ dans les mains et souffler ma lumière  je n avais ps cesse en dormant de faire 
 reflexions sur ce que je venais de lire mais ces reflexions avaient pris un tour \
 un peu particulier  il me semblait que j etais moi meme ce dont parlait l ouvrage";
 	
+	
+
+
 #[cfg(not(test))]
 #[no_mangle]
 fn rs_main() -> !{

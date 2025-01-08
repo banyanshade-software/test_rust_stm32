@@ -1,6 +1,7 @@
 [alias]
 test_mac = "test --target=x86_64-apple-darwin"
 # https://stackoverflow.com/questions/52802835/how-can-i-specify-a-different-default-target-for-building-and-testing-in-the-car
+docx = "doc --no-deps --open"
 
 
 [target.thumbv7m-none-eabi]
@@ -40,3 +41,6 @@ target = "thumbv7em-none-eabihf"     # Cortex-M4F and Cortex-M7F (with FPU)
 # target = "thumbv8m.base-none-eabi"   # Cortex-M23
 # target = "thumbv8m.main-none-eabi"   # Cortex-M33 (no FPU)
 # target = "thumbv8m.main-none-eabihf" # Cortex-M33 (with FPU)
+
+#rustdocflags = [ "--html-in-header", "./src/docs-header.html", "--no-deps", "--document-private-items",  "--open" ]
+rustdocflags = [ "--html-in-header", "./src/docs-header.html", "--document-private-items" ]
