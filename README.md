@@ -57,3 +57,5 @@ Several experimentations are performed here, on several branches
   we add rust_doc, and we configure (see .cargo/config.toml and src/docs-header.html) 
   it to be able to include LaTeX comments, because it's fun and it can be
   *very* convenient when some maths are part of the process !
+  
+  use '''cargo docx''' to generate doc

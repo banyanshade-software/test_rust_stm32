@@ -58,8 +58,6 @@ reflexions sur ce que je venais de lire mais ces reflexions avaient pris un tour
 un peu particulier  il me semblait que j etais moi meme ce dont parlait l ouvrage";
 	
 	
-
-
 /// entry point for our Rust part
 ///
 /// This is called directly from main.c, in the default task startup function
@@ -211,8 +209,7 @@ mod tests {
 }
 
 
-// stack 844 B
-// 364B with opt
+
 
 #[cfg(not(test))]
 #[panic_handler]
