@@ -4,6 +4,12 @@ version = "0.1.0"
 edition = "2021"
 
 
+
+# untested
+[package.metadata.docs.rs]
+rustdoc-args = [ "--html-in-header", "./src/docs-header.html" ]
+
+
 [profile.dev]
 panic ="abort"
 opt-level = 3
