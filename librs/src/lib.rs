@@ -1,3 +1,14 @@
+//! lib.rs will be compiled in a static lib, and linked togerther with
+//! usual **C** cube IDE project (because we want to keep STM device configuration
+//! GUI) and **FreeRTOS** which is highly mature.
+//!
+//! The idea is to be able to use **Rust** in existing C/FreeRTOS application
+//! while carefully monitoring memory footprint and stack usage,
+//! and progressively migrate some modules to Rust
+//!
+//! using KaTeX, rust doc is configured to include LaTeX
+//! (for instance $E = mc^2$) 
+//! using an alias (cargo docx)
 
 // http://blackforrest-embedded.de/2024/05/01/rust-and-vendor-sdksii/
 // see also https://github.com/rust-lang/miri/issues/3498
@@ -13,15 +24,8 @@
 extern crate std;
 
 
-/// $$E = mc^2 $$
-/// $$m = \frac{m_0}{\sqrt{1-\frac{v^2}{c^2}}}$$
-pub fn xmorse(ch:char) -> &'static str
-{
-	"toto"
-}
-
-
 //extern crate panic_itm;
+
 #[cfg(not(test))]
 extern crate critical_section;
 
@@ -33,11 +37,16 @@ use stm32g4_staging::stm32g491;
 //extern "C" { pub fn HAL_Delay(mil :u32); }
 
 extern "C" { 
+    /// extern definition of FreeRTOS/CMSIS osDelay()
 	pub fn osDelay(mil :u32) -> c_int;
+    /// wrapper (removing delay parameters) around xTaskNotifyWait
 	pub fn notifWait() -> u32;
 }
 
-/// sample text 
+/// sample text. 
+///
+/// The text  is defined as a constant str, but it could be
+/// anything that can be iterated character by character
 const SOMETEXT :&str = "\
 Longtemps je me suis couche de bonne heure  \
 Parfois a peine ma bougie eteinte  mes yeux se fermaient si vite \
@@ -51,11 +60,12 @@ un peu particulier  il me semblait que j etais moi meme ce dont parlait l ouvrag
 	
 
 
+/// entry point for our Rust part
+///
+/// This is called directly from main.c, in the default task startup function
 #[cfg(not(test))]
 #[no_mangle]
 fn rs_main() -> !{
-	
-
 	// let peripherals = stm32g491::Peripherals::take().unwrap(); << dependecies problem
 	let peripherals = unsafe { stm32g491::Peripherals::steal() };
     let gpioa = &peripherals.GPIOA;  // Nucleo green LED is on PA5
@@ -83,6 +93,21 @@ fn rs_main() -> !{
 	}
 }
 
+/// simple function to create the morse iterators
+///
+/// by puting this code in a fn rather than directly inline,
+/// we ease unit testing
+/// the code uses [morse] and [to_onoff] with flat_map()
+/// and is pretty straight forward
+///
+/// It is quite fun to use map(), which is a feature directly
+/// derived from functional languages, in an embeded RT environment
+/// without any form a dynamic memory allocation!
+///
+/// The actual calls to morse() and to to_onoff() occurs
+/// when needed (lazy evaluation) and the input string can be arbitrarly long
+/// (in this code it is stored in flash) 
+
 fn morse_iterator(txt:&str) -> impl Iterator<Item=char> + use<'_> {
   		let mi = txt.chars()                           // eg: "abc" 
   		                     .flat_map(|k| morse(k).chars())    // eg: ".- -... -.-. ",
@@ -90,6 +115,12 @@ fn morse_iterator(txt:&str) -> impl Iterator<Item=char> + use<'_> {
         mi
 }
 
+/// convert a single character to Morse code
+///
+/// for instance, morse('a') -> ".- "
+///
+/// function only handles letters A-Z, and not numbers, 
+/// though it would be easy to add
 fn morse(ch:char) -> &'static str
 {
 	//iprintln!(itm(), "morsing {}", ch);
@@ -100,7 +131,7 @@ fn morse(ch:char) -> &'static str
 	}
 	// do NOT declare conv with a let, otherwise
 	// it will allocate the array on the stack (364 bytes instead of 156)
-	// strangely static also seems to allocate space on stack, which is strange
+	// strangely static also seems to allocate space on stack
 	const  CONV :[&'static str;26] = [
 	/* a */ ".- ",
     /* b */ "-... ",
@@ -135,6 +166,11 @@ fn morse(ch:char) -> &'static str
 
 
 
+/// second step: transform '-' and '.' to gpio status on/off
+///
+/// for instance '-' is transformed to "xxx " which define
+/// a 300ms on and 100ms off sequence
+/// (assuming we are waked up every 100ms)
 
 fn to_onoff(m :char) -> &'static str {
 	let r = match m {
