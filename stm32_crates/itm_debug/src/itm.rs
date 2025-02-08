@@ -11,14 +11,15 @@
 //! we also provide several msg domains, because we don't want to
 //! activate all messages at the same time
 
-use core::{ptr, slice};
+//use core::{ptr, slice};
 
 use cortex_m::peripheral::itm::Stim;
+use cortex_m::peripheral::ITM;
+
 //use cortex_m::iprintln;
 
 
-static mask :u16 = 0;
-static port0 :Option<Stim> = None;
+static MASK :u16 = 0;
 
 fn write_all(port: &mut Stim, buffer: &[u8]) {
     for c in buffer {
@@ -27,19 +28,17 @@ fn write_all(port: &mut Stim, buffer: &[u8]) {
     }       
 }
 
-fn prt3(msg: &str, a: i32, b: i32, c: i32) {
-    if port0 == None {
-        let mut cp: cortex_m::Peripherals = cortex_m::Peripherals::take().unwrap();
-        //let dp = stm32::Peripherals::take().unwrap();
-        port0 = Some(&mut cp.ITM[0]);
-    }
+fn prt3(msg: &str, _a: i32, _b: i32, _c: i32, _n: u8) {
+    let itm = unsafe { &mut *ITM::PTR };
+    let port0 = &mut itm.stim[0];
 
-    write_all(port0.unwrap(), msg.as_bytes());
+    write_all(port0, msg.as_bytes());
 }
 
 
+
 pub fn itm_debug3(flags: u16, msg: &str, a: i32, b: i32, c: i32) {
-    if 0 != (flags & mask) {
-        prt3(msg, a, b, c);
+    if 0 != (flags & MASK) {
+        prt3(msg, a, b, c, 3);
     }
 }
