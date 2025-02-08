@@ -37,8 +37,46 @@ fn prt3(msg: &str, _a: i32, _b: i32, _c: i32, _n: u8) {
 
 
 
-pub fn itm_debug3(flags: u16, msg: &str, a: i32, b: i32, c: i32) {
-    if 0 != (flags & MASK) {
-        prt3(msg, a, b, c, 3);
-    }
+#[macro_export]
+macro_rules! itm_debug3 {
+    ($flags:expr, $msg:expr, $a:expr, $b:expr, $c:expr) => {
+        if 0 != ($flags & MASK) {
+            prt3($msg, $a, $b, $c, 3);
+        }
+    };
+}
+#[macro_export]
+macro_rules! itm_debug2 {
+    ($flags:expr, $msg:expr, $a:expr, $b:expr) => {
+        if 0 != ($flags & MASK) {
+            prt3($msg, $a, $b, 0, 2);
+        }
+    };
+}
+#[macro_export]
+macro_rules! itm_debug1 {
+    ($flags:expr, $msg:expr, $a:expr) => {
+        if 0 != ($flags & MASK) {
+            prt3($msg, $a, 0, 0, 1);
+        }
+    };
+}
+#[macro_export]
+macro_rules! itm_debug0 {
+    ($flags:expr, $msg:expr) => {
+        if 0 != ($flags & MASK) {
+            prt3($msg, 0,0,0, 0);
+        }
+    };
+}
+
+
+
+
+
+
+
+
+pub fn t3() {
+    itm_debug3!(1, "test", 42, 44, 55);
 }
