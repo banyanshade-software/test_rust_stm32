@@ -1,6 +1,24 @@
 [package]
+authors = [
+    "Daniel Braun"
+]
+categories = ["embedded", "hardware-support", "no-std"]
+description = "Low footprint ITM cell based debug"
+documentation = "https://docs.rs/cortex-m"
+
 name = "itm_debug"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+
+[package.metadata.docs.rs]
+targets = [
+    "thumbv8m.main-none-eabihf",
+    "thumbv6m-none-eabi",
+    "thumbv7em-none-eabi",
+    "thumbv7em-none-eabihf",
+    "thumbv7m-none-eabi",
+    "thumbv8m.base-none-eabi",
+    "thumbv8m.main-none-eabi"
+]
