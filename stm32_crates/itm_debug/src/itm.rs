@@ -21,6 +21,43 @@ use cortex_m::peripheral::ITM;
 
 static MASK :u16 = 0;
 
+struct IntToCharIter {
+    num: i32,
+    divisor: i32,
+}
+
+
+impl IntToCharIter {
+     fn new(num: i32) -> Self {
+        if num == 0 {
+            return Self { num: 0, divisor: 1 };
+        }
+
+        let mut divisor = 1;
+        while num / divisor >= 10 {
+            divisor *= 10;
+        }
+
+        Self { num, divisor }
+    }
+}
+impl Iterator for IntToCharIter {
+    type Item = u8;
+
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.divisor == 0 {
+            return None;
+        }
+
+        let digit = (self.num / self.divisor) % 10;
+        self.divisor /= 10;
+
+        Some((b'0' + digit as u8) as u8)
+    }
+}
+
+
 fn write_all(port: &mut Stim, buffer: &[u8]) {
     for c in buffer {
         while !port.is_fifo_ready() {}
@@ -28,11 +65,23 @@ fn write_all(port: &mut Stim, buffer: &[u8]) {
     }       
 }
 
-fn prt3(msg: &str, _a: i32, _b: i32, _c: i32, _n: u8) {
+fn write_int(port: &mut Stim, v: i32)
+{
+    let it = IntToCharIter::new(v);
+    for ch in it {
+        while !port.is_fifo_ready() {}
+        port.write_u8(ch);
+    }
+}
+
+fn prt3(msg: &str, a: i32, b: i32, c: i32, n: u8) {
     let itm = unsafe { &mut *ITM::PTR };
     let port0 = &mut itm.stim[0];
 
     write_all(port0, msg.as_bytes());
+    if n>0 { write_int(port0, a) }
+    if n>1 { write_int(port0, b) }
+    if n>2 { write_int(port0, c) }
 }
 
 
