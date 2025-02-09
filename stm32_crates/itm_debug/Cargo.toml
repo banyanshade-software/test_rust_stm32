@@ -12,13 +12,16 @@ edition = "2021"
 
 [profile.dev]
 opt-level = 3
-
+panic ="abort"
 
 [profile.release]
 opt-level = 3
+panic ="abort"
 
-[lib]
-crate-type=["staticlib"]
+links = "itm-debug-m"
+
+#[lib]
+#crate-type=["staticlib"]
 
 [target.'cfg(target_os="none")'.dependencies]
 cortex-m = { version="0.7.7", feature=["critical-section-single-core"] }

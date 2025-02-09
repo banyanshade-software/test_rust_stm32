@@ -1,5 +1,5 @@
 [alias]
-test_mac = "test --target=x86_64-apple-darwin"
+test_mac = "test --target=x86_64-apple-darwin --tests"
 # https://stackoverflow.com/questions/52802835/how-can-i-specify-a-different-default-target-for-building-and-testing-in-the-car
 docx = "doc --no-deps --open"
 

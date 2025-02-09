@@ -18,6 +18,7 @@ use cortex_m::peripheral::itm::Stim;
 use cortex_m::peripheral::ITM;
 
 
+#[cfg(not(test))]
 static MASK :u16 = 0;
 
 struct IntToCharIter {
@@ -73,7 +74,7 @@ mod tests {
     }
     #[test]
     fn test_itloop() {
-        let mut it = IntToCharIter::new(4287234);
+        let it = IntToCharIter::new(4287234);
         let mut v: Vec<u8> = Vec::new();
         for x in it {
             v.push(x);
