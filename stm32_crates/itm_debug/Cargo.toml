@@ -4,9 +4,10 @@ authors = [
 ]
 categories = ["embedded", "hardware-support", "no-std"]
 description = "Low footprint ITM cell based debug"
+license = "GPLv3"
 #documentation = "https://docs.rs/cortex-m"
 
-name = "itm_debug"
+name = "itm-debug"
 version = "0.1.0"
 edition = "2021"
 
