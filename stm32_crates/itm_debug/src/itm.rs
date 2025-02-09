@@ -18,8 +18,11 @@ use cortex_m::peripheral::itm::Stim;
 use cortex_m::peripheral::ITM;
 
 
+//use core::ffi::c_int;
+
 #[cfg(not(test))]
-static MASK :u16 = 0;
+pub static ITM_MASK :u16 = 0;
+pub const DBG_ERR :u16 = 0x0001;
 
 struct IntToCharIter {
     num: i32,
@@ -46,6 +49,9 @@ impl IntToCharIter {
         }
 
         Self { num, divisor, neg }
+    }
+    fn new8(num: i32) -> Self {
+        Self { num: num, divisor: 1000000, neg: false }
     }
 }
 impl Iterator for IntToCharIter {
@@ -83,6 +89,18 @@ mod tests {
         assert_eq!(it.next(), None);
     }
     #[test]
+    fn test_n8i() {
+        let mut it = IntToCharIter::new8(42);
+        assert_eq!(it.next(), Some('0' as u8));
+        assert_eq!(it.next(), Some('0' as u8));
+        assert_eq!(it.next(), Some('0' as u8));
+        assert_eq!(it.next(), Some('0' as u8));
+        assert_eq!(it.next(), Some('0' as u8));
+        assert_eq!(it.next(), Some('4' as u8));
+        assert_eq!(it.next(), Some('2' as u8));
+        assert_eq!(it.next(), None);
+    }
+    #[test]
     fn test_zero() {
         let mut it = IntToCharIter::new(0);
         assert_eq!(it.next(), Some('0' as u8));
@@ -112,6 +130,7 @@ mod tests {
 }
 
 
+extern "C" { pub fn HAL_GetTick() -> u32; }
 
 #[cfg(not(test))]
 fn write_all(port: &mut Stim, buffer: &[u8]) {
@@ -132,7 +151,18 @@ fn write_int(port: &mut Stim, v: i32)
 }
 
 #[cfg(not(test))]
-fn prt3(msg: &str, a: i32, b: i32, c: i32, n: u8) {
+fn write_uint8(port: &mut Stim, v: i32)
+{
+    let it = IntToCharIter::new8(v);
+    for ch in it {
+        while !port.is_fifo_ready() {}
+        port.write_u8(ch);
+    }
+}
+
+
+#[cfg(not(test))]
+pub fn itm_prt3(msg: &str, a: i32, b: i32, c: i32, n: u8) {
     let itm = unsafe { &mut *ITM::PTR };
     let port0 = &mut itm.stim[0];
 
@@ -147,37 +177,35 @@ fn prt3(msg: &str, a: i32, b: i32, c: i32, n: u8) {
 #[macro_export]
 macro_rules! itm_debug3 {
     ($flags:expr, $msg:expr, $a:expr, $b:expr, $c:expr) => {
-        if 0 != ($flags & MASK) {
-            prt3($msg, $a, $b, $c, 3);
+        if 0 != ($flags & $crate::itm::ITM_MASK) {
+            $crate::itm::itm_prt3($msg, $a, $b, $c, 3);
         }
     };
 }
 #[macro_export]
 macro_rules! itm_debug2 {
     ($flags:expr, $msg:expr, $a:expr, $b:expr) => {
-        if 0 != ($flags & MASK) {
-            prt3($msg, $a, $b, 0, 2);
+        if 0 != ($flags & $crate::itm::ITM_MASK) {
+            $crate::itm::itm_prt3($msg, $a, $b, 0, 2);
         }
     };
 }
 #[macro_export]
 macro_rules! itm_debug1 {
     ($flags:expr, $msg:expr, $a:expr) => {
-        if 0 != ($flags & MASK) {
-            prt3($msg, $a, 0, 0, 1);
+        if 0 != ($flags & $crate::itm::ITM_MASK) {
+            $crate::itm::itm_prt3($msg, $a, 0, 0, 1);
         }
     };
 }
 #[macro_export]
 macro_rules! itm_debug0 {
     ($flags:expr, $msg:expr) => {
-        if 0 != ($flags & MASK) {
-            prt3($msg, 0,0,0, 0);
+        if 0 != ($flags & $crate::itm::ITM_MASK) {
+            $crate::itm::itm_prt3($msg, 0,0,0, 0);
         }
     };
 }
-
-
 
 
 
