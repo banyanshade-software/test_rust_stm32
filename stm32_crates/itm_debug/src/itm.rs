@@ -24,13 +24,20 @@ static MASK :u16 = 0;
 struct IntToCharIter {
     num: i32,
     divisor: i32,
+    neg: bool,
 }
 
 
 impl IntToCharIter {
-     fn new(num: i32) -> Self {
-        if num == 0 {
-            return Self { num: 0, divisor: 1 };
+     fn new(n: i32) -> Self {
+        if n == 0 {
+            return Self { num: 0, divisor: 1, neg: false };
+        }
+        let mut num = n;
+        let mut neg = false;
+        if num < 0 {
+            neg = true;
+            num = -num;
         }
 
         let mut divisor = 1;
@@ -38,16 +45,19 @@ impl IntToCharIter {
             divisor *= 10;
         }
 
-        Self { num, divisor }
+        Self { num, divisor, neg }
     }
 }
 impl Iterator for IntToCharIter {
     type Item = u8;
 
-
     fn next(&mut self) -> Option<Self::Item> {
         if self.divisor == 0 {
             return None;
+        }
+        if self.neg {
+            self.neg = false;
+            return Some('-' as u8);
         }
 
         let digit = (self.num / self.divisor) % 10;
@@ -64,8 +74,24 @@ mod tests {
     use super::*;
    
     #[test]
-    fn test_it1() {
+    fn test_pos() {
         let mut it = IntToCharIter::new(1234);
+        assert_eq!(it.next(), Some('1' as u8));
+        assert_eq!(it.next(), Some('2' as u8));
+        assert_eq!(it.next(), Some('3' as u8));
+        assert_eq!(it.next(), Some('4' as u8));
+        assert_eq!(it.next(), None);
+    }
+    #[test]
+    fn test_zero() {
+        let mut it = IntToCharIter::new(0);
+        assert_eq!(it.next(), Some('0' as u8));
+        assert_eq!(it.next(), None);
+    }
+    #[test]
+    fn test_neg() {
+        let mut it = IntToCharIter::new(-1234);
+        assert_eq!(it.next(), Some('-' as u8));
         assert_eq!(it.next(), Some('1' as u8));
         assert_eq!(it.next(), Some('2' as u8));
         assert_eq!(it.next(), Some('3' as u8));
