@@ -23,6 +23,7 @@
 #[cfg(test)]
 extern crate std;
 
+use itm_debug::{itm_debug1, itm::DBG_ERR};
 
 //extern crate panic_itm;
 
@@ -68,6 +69,7 @@ fn rs_main() -> !{
 	let peripherals = unsafe { stm32g491::Peripherals::steal() };
     let gpioa = &peripherals.GPIOA;  // Nucleo green LED is on PA5
 	
+    itm_debug1!(DBG_ERR, "hello", 0);
 	loop {
         // all the string to morse conversion is on the 3 following lines,
         // which obviously can easyly be tested on host, separately from the MCU stuffs

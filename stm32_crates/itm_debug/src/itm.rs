@@ -25,8 +25,8 @@ pub static ITM_MASK :u16 = 0;
 pub const DBG_ERR :u16 = 0x0001;
 
 struct IntToCharIter {
-    num: i32,
-    divisor: i32,
+    num: u32,
+    divisor: u32,
     neg: bool,
 }
 
@@ -36,11 +36,13 @@ impl IntToCharIter {
         if n == 0 {
             return Self { num: 0, divisor: 1, neg: false };
         }
-        let mut num = n;
+        let num :u32;
         let mut neg = false;
-        if num < 0 {
+        if n < 0 {
             neg = true;
-            num = -num;
+            num = (-n) as u32;
+        } else {
+            num = n as u32;
         }
 
         let mut divisor = 1;
@@ -50,7 +52,7 @@ impl IntToCharIter {
 
         Self { num, divisor, neg }
     }
-    fn new8(num: i32) -> Self {
+    fn new8(num: u32) -> Self {
         Self { num: num, divisor: 1000000, neg: false }
     }
 }
@@ -131,6 +133,8 @@ mod tests {
 
 
 extern "C" { pub fn HAL_GetTick() -> u32; }
+#[inline]
+fn hal_get_tick() -> u32 { unsafe { HAL_GetTick() }}
 
 #[cfg(not(test))]
 fn write_all(port: &mut Stim, buffer: &[u8]) {
@@ -151,7 +155,7 @@ fn write_int(port: &mut Stim, v: i32)
 }
 
 #[cfg(not(test))]
-fn write_uint8(port: &mut Stim, v: i32)
+fn write_uint8d(port: &mut Stim, v: u32)
 {
     let it = IntToCharIter::new8(v);
     for ch in it {
@@ -160,16 +164,29 @@ fn write_uint8(port: &mut Stim, v: i32)
     }
 }
 
+#[cfg(not(test))]
+fn write_char(port: &mut Stim, v: char)
+{
+    while !port.is_fifo_ready() {}
+    port.write_u8(v as u8);
+}
 
 #[cfg(not(test))]
-pub fn itm_prt3(msg: &str, a: i32, b: i32, c: i32, n: u8) {
+pub fn itm_prt3(msg: &str, a: i32, b: i32, c: i32, n: u8, err: bool) {
     let itm = unsafe { &mut *ITM::PTR };
     let port0 = &mut itm.stim[0];
-
+    let t = hal_get_tick();
+    write_uint8d(port0, t);
+    if err { 
+        write_char(port0, '*'); 
+    } else { 
+        write_char(port0, ' '); 
+    }
     write_all(port0, msg.as_bytes());
     if n>0 { write_int(port0, a) }
     if n>1 { write_int(port0, b) }
     if n>2 { write_int(port0, c) }
+    write_char(port0, '\n'); 
 }
 
 
@@ -178,7 +195,8 @@ pub fn itm_prt3(msg: &str, a: i32, b: i32, c: i32, n: u8) {
 macro_rules! itm_debug3 {
     ($flags:expr, $msg:expr, $a:expr, $b:expr, $c:expr) => {
         if 0 != ($flags & $crate::itm::ITM_MASK) {
-            $crate::itm::itm_prt3($msg, $a, $b, $c, 3);
+            let err = ($flags & $crate::itm::DBG_ERR) != 0;
+            $crate::itm::itm_prt3($msg, $a, $b, $c, 3, err);
         }
     };
 }
@@ -186,7 +204,8 @@ macro_rules! itm_debug3 {
 macro_rules! itm_debug2 {
     ($flags:expr, $msg:expr, $a:expr, $b:expr) => {
         if 0 != ($flags & $crate::itm::ITM_MASK) {
-            $crate::itm::itm_prt3($msg, $a, $b, 0, 2);
+            let err = ($flags & $crate::itm::DBG_ERR) != 0;
+            $crate::itm::itm_prt3($msg, $a, $b, 0, 2, err);
         }
     };
 }
@@ -194,7 +213,8 @@ macro_rules! itm_debug2 {
 macro_rules! itm_debug1 {
     ($flags:expr, $msg:expr, $a:expr) => {
         if 0 != ($flags & $crate::itm::ITM_MASK) {
-            $crate::itm::itm_prt3($msg, $a, 0, 0, 1);
+            let err = ($flags & $crate::itm::DBG_ERR) != 0;
+            $crate::itm::itm_prt3($msg, $a, 0, 0, 1, err);
         }
     };
 }
@@ -202,7 +222,8 @@ macro_rules! itm_debug1 {
 macro_rules! itm_debug0 {
     ($flags:expr, $msg:expr) => {
         if 0 != ($flags & $crate::itm::ITM_MASK) {
-            $crate::itm::itm_prt3($msg, 0,0,0, 0);
+            let err = ($flags & $crate::itm::DBG_ERR) != 0;
+            $crate::itm::itm_prt3($msg, 0,0,0, 0, err);
         }
     };
 }
@@ -214,5 +235,8 @@ macro_rules! itm_debug0 {
 
 #[cfg(not(test))]
 pub fn t3() {
+    itm_debug0!(1, "test");
+    itm_debug1!(1, "test", 55);
+    itm_debug2!(1, "test", 44, 55);
     itm_debug3!(1, "test", 42, 44, 55);
 }
