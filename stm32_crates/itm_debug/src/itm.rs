@@ -53,7 +53,7 @@ impl IntToCharIter {
         Self { num, divisor, neg }
     }
     fn new8(num: u32) -> Self {
-        Self { num: num, divisor: 1000000, neg: false }
+        Self { num, divisor: 1000000, neg: false }
     }
 }
 impl Iterator for IntToCharIter {
@@ -65,13 +65,13 @@ impl Iterator for IntToCharIter {
         }
         if self.neg {
             self.neg = false;
-            return Some('-' as u8);
+            return Some(b'-');
         }
 
         let digit = (self.num / self.divisor) % 10;
         self.divisor /= 10;
 
-        Some((b'0' + digit as u8) as u8)
+        Some(b'0' + digit as u8)
     }
 }
 
